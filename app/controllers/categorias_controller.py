@@ -13,7 +13,7 @@ def listar_categorias():
     finally:
         cursor.close()
 
-def obter_categoria(id):
+def obter_categorias(id):
     try:
         cursor = mydb.cursor(dictionary=True)
         cursor.execute("SELECT * FROM Categoria WHERE id = %s", (id,))

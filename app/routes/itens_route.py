@@ -1,17 +1,17 @@
 from flask import Blueprint, request, jsonify
 from app.controllers.itens_controller import (
     listar_itens,
-    obter_itens,
-    criar_itens,
-    atualizar_itens,
-    deletar_itens
+    obter_item,
+    criar_item,
+    atualizar_item,
+    deletar_item
 )
 from app.models.mensagens import MensagemErro
 
 item_bp = Blueprint('item_bp', __name__, url_prefix='/itens')
 
 @item_bp.route('/', methods=['GET'])
-def get_itens():
+def lista_itens():
     try:
         itens = listar_itens()
         return jsonify(itens), 200
@@ -19,9 +19,9 @@ def get_itens():
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500
 
 @item_bp.route('/<int:id>', methods=['GET'])
-def get_itens(id):
+def obter_itens(id):
     try:
-        itens = obter_itens(id)
+        itens = obter_item(id)
         if itens is None:
             return jsonify(MensagemErro('Item não encontrado', 404).serialize()), 404
         
@@ -44,7 +44,7 @@ def add_itens():
         if not id or not quantidade or not id_venda or not id_produto:
             return jsonify(MensagemErro('Todos os campos são obrigatórios', 400).serialize()), 400
         
-        novo_item = criar_itens(id, quantidade, id_venda, id_produto)
+        novo_item = criar_item(id, quantidade, id_venda, id_produto)
         return jsonify(novo_item), 201
     except Exception as e:
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500
@@ -61,7 +61,7 @@ def update_itens(id):
         id_venda = data.get('id_venda')
         id_produto = data.get('id_produto')
         
-        item_atualizado = atualizar_itens(id, quantidade, id_venda, id_produto)
+        item_atualizado = atualizar_item(id, quantidade, id_venda, id_produto)
         
         if not item_atualizado:
             return jsonify(MensagemErro('Item não encontrado', 404).serialize()), 404
@@ -73,7 +73,7 @@ def update_itens(id):
 @item_bp.route('/<int:id>', methods=['DELETE'])
 def delete_itens(id):
     try:
-        if deletar_itens(id):
+        if deletar_item(id):
             return jsonify({'message': 'Item deletado com sucesso'}), 200
         
         return jsonify(MensagemErro('Item não encontrado', 404).serialize()), 404

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.controllers.produtos_controller import (
-    listar_produto,
+    listar_produtos,
     obter_produto,
     criar_produto,
     atualizar_produto,
@@ -11,15 +11,15 @@ from app.models.mensagens import MensagemErro
 produto_bp = Blueprint('produto_bp', __name__, url_prefix='/produto')
 
 @produto_bp.route('/', methods=['GET'])
-def get_produtos():
+def listar_produtos():
     try:
-        produto = listar_produto()
+        produto = listar_produtos()
         return jsonify(produto), 200
     except Exception as e:
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500
 
 @produto_bp.route('/<int:id>', methods=['GET'])
-def get_produtos(id):
+def obter_produtos(id):
     try:
         produto= obter_produto(id)
         if produto is None:

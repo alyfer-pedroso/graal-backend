@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.controllers.fornecedores_controller import (
-    listar_fornecedor,
+    listar_fornecedores,
     obter_fornecedor,
     criar_fornecedor,
     atualizar_fornecedor,
@@ -13,7 +13,7 @@ fornecedor_bp = Blueprint('fornecedor_bp', __name__, url_prefix='/fornecedor')
 @fornecedor_bp.route('/', methods=['GET'])
 def get_fornecedores():
     try:
-        fornecedor = listar_fornecedor()
+        fornecedor = listar_fornecedores()
         return jsonify(fornecedor), 200
     except Exception as e:
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500
