@@ -1,6 +1,6 @@
 from flask import Flask
 
-from .routes.cargo_route import cargo_bp
+from .routes.cargos_route import cargo_bp
 
 def create_app():
     app = Flask(__name__)
