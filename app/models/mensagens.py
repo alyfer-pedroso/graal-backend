@@ -1,3 +1,5 @@
+from app.database import mydb
+
 class MensagemErro:
     def __init__(self, mensagem, status):
         self.mensagem = mensagem

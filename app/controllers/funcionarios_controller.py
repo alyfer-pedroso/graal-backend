@@ -1,0 +1,99 @@
+from app.database import mydb
+from app.models import funcionario as cg, mensagens
+
+def listar_funcionarios():
+    try:
+        cursor = mydb.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM Funcionario")
+        
+        funcionarios = cursor.fetchall()
+        return [cg.Funcionario.from_db_row(funcionario).serialize() for funcionario in funcionarios]
+    except Exception as e:
+        return mensagens.MensagemErro(e.args[1], e.args[0]).serialize()
+    finally:
+        cursor.close()
+
+def obter_funcionario(id):
+    try:
+        cursor = mydb.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM Funcionario WHERE id = %s", (id,))
+
+        funcionario = cursor.fetchone()
+        return cg.Funcionario.from_db_row(funcionario).serialize() if funcionario else None
+    except Exception as e:
+        return mensagens.MensagemErro(e.args[1], e.args[0]).serialize()
+    finally:
+        cursor.close()
+
+def criar_funcionario(nome, telefone, cpf, codigo, usuario, senha, id_cargo):
+    try:
+        cursor = mydb.cursor()
+        cursor.execute(
+            "INSERT INTO Funcionario (nome, telefone, cpf, codigo, usuario, senha, id_cargo) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (nome, telefone, cpf, codigo, usuario, senha, id_cargo)
+        )
+        mydb.commit()
+        return obter_funcionario(cursor.lastrowid)
+    except Exception as e:
+        mydb.rollback()
+        return mensagens.MensagemErro(e.args[1], e.args[0]).serialize()
+    finally:
+        cursor.close()
+
+def atualizar_funcionario(id, nome=None, telefone=None, cpf=None, codigo=None, usuario=None, senha=None, id_cargo=None):
+    try:
+        cursor = mydb.cursor()
+        updates = []
+        params = []
+
+        if nome:
+            updates.append("nome = %s")
+            params.append(nome)
+        if telefone:
+            updates.append("telefone = %s")
+            params.append(telefone)
+        if cpf:
+            updates.append("cpf = %s")
+            params.append(cpf)
+        if codigo:
+            updates.append("codigo = %s")
+            params.append(codigo)
+        if usuario:
+            updates.append("usuario = %s")
+            params.append(usuario)
+        if senha:
+            updates.append("senha = %s")
+            params.append(senha)
+        if id_cargo:
+            updates.append("id_cargo = %s")
+            params.append(id_cargo)
+
+        if not updates:
+            return mensagens.MensagemErro("Nenhum dado para atualizar", 400).serialize()
+
+        query = "UPDATE Funcionario SET " + ", ".join(updates) + " WHERE id = %s"
+        params.append(id)
+        cursor.execute(query, tuple(params))
+
+        mydb.commit()
+        return obter_funcionario(id)
+    except Exception as e:
+        mydb.rollback()
+        return mensagens.MensagemErro(e.args[1], e.args[0]).serialize()
+    finally:
+        cursor.close()
+
+
+def deletar_funcionario(id):
+    try:
+        cursor = mydb.cursor()
+        cursor.execute("DELETE FROM Funcionario WHERE id = %s", (id,))
+
+        mydb.commit()
+        return cursor.rowcount == 1
+    except Exception as e:
+        mydb.rollback()
+        return False
+    finally:
+        cursor.close()
+
