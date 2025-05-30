@@ -39,15 +39,14 @@ def add_funcionario():
         nome = data.get('nome')
         telefone = data.get('telefone')
         cpf = data.get('cpf')
-        codigo = data.get('codigo')
         usuario = data.get('usuario')
         senha = data.get('senha')
         id_cargo = data.get('id_cargo')
 
-        if not all([nome, telefone, cpf, codigo, usuario, senha, id_cargo]):
+        if not all([nome, telefone, cpf, usuario, senha, id_cargo]):
             return jsonify(MensagemErro('Todos os campos são obrigatórios', 400).serialize()), 400
 
-        novo_funcionario = criar_funcionario(nome, telefone, cpf, codigo, usuario, senha, id_cargo)
+        novo_funcionario = criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo)
         return jsonify(novo_funcionario), 201
     except Exception as e:
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500

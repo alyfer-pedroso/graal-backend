@@ -1,3 +1,4 @@
+import random
 from app.database import mydb
 from app.models import funcionario as cg, mensagens
 
@@ -25,12 +26,15 @@ def obter_funcionario(id):
     finally:
         cursor.close()
 
-def criar_funcionario(nome, telefone, cpf, codigo, usuario, senha, id_cargo):
+def criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo):
     try:
         cursor = mydb.cursor()
+
+        codigo = gerar_codigo_funcionario()
+
         cursor.execute(
-            "INSERT INTO Funcionario (nome, telefone, cpf, codigo, usuario, senha, id_cargo) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (nome, telefone, cpf, codigo, usuario, senha, id_cargo)
+            "INSERT INTO Funcionario (nome, telefone, cpf, usuario, senha, codigo, id_cargo) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (nome, telefone, cpf, usuario, senha, codigo, id_cargo)
         )
         mydb.commit()
         return obter_funcionario(cursor.lastrowid)
@@ -40,7 +44,7 @@ def criar_funcionario(nome, telefone, cpf, codigo, usuario, senha, id_cargo):
     finally:
         cursor.close()
 
-def atualizar_funcionario(id, nome=None, telefone=None, cpf=None, codigo=None, usuario=None, senha=None, id_cargo=None):
+def atualizar_funcionario(id, nome=None, telefone=None, cpf=None, usuario=None, senha=None, id_cargo=None):
     try:
         cursor = mydb.cursor()
         updates = []
@@ -55,9 +59,6 @@ def atualizar_funcionario(id, nome=None, telefone=None, cpf=None, codigo=None, u
         if cpf:
             updates.append("cpf = %s")
             params.append(cpf)
-        if codigo:
-            updates.append("codigo = %s")
-            params.append(codigo)
         if usuario:
             updates.append("usuario = %s")
             params.append(usuario)
@@ -97,3 +98,21 @@ def deletar_funcionario(id):
     finally:
         cursor.close()
 
+
+def gerar_codigo_funcionario():
+    cursor = mydb.cursor()
+
+    min_11_digit = 10**10
+    max_11_digit = 10**11 - 1
+
+    codigo = 0
+    generate = True
+
+    while(generate):
+        codigo = random.randint(min_11_digit, max_11_digit)
+        cursor.execute("SELECT id FROM Funcionario WHERE codigo = %s", (codigo,))
+
+    if not cursor.fetchone():
+        generate = False
+
+    return codigo
