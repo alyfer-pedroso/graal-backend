@@ -17,7 +17,15 @@ def listar_funcionarios():
 def obter_funcionario(id):
     try:
         cursor = mydb.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Funcionario WHERE id = %s", (id,))
+        cursor.execute("""
+            SELECT 
+                f.*, 
+                c.nome AS nome_cargo, 
+                c.hierarquia 
+            FROM Funcionario f
+            JOIN Cargo c ON f.id_cargo = c.id
+            WHERE f.id = %s
+        """, (id,))
 
         funcionario = cursor.fetchone()
         return cg.Funcionario.from_db_row(funcionario).serialize() if funcionario else None
@@ -26,12 +34,9 @@ def obter_funcionario(id):
     finally:
         cursor.close()
 
-def criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo, codigo_validacao):
+def criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo):
     try:
         cursor = mydb.cursor()
-
-        if not validar_codigo(codigo_validacao):
-            return mensagens.MensagemErro('Código de validação inválido', 400).serialize()
 
         codigo = gerar_codigo_funcionario()
         cursor.execute(

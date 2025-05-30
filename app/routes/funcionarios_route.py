@@ -5,7 +5,8 @@ from app.controllers.funcionarios_controller import (
     criar_funcionario,
     atualizar_funcionario,
     deletar_funcionario,
-    login_funcionario
+    login_funcionario,
+    validar_codigo
 )
 from app.models.mensagens import MensagemErro
 
@@ -24,7 +25,7 @@ def get_funcionario(id):
     try:
         funcionario = obter_funcionario(id)
         if funcionario is None:
-            return jsonify(MensagemErro('funcionario não encontrado', 404).serialize()), 404
+            return jsonify(MensagemErro('Funcionário nao encontrado', 404).serialize()), 404
         
         return jsonify(funcionario), 200
     except Exception as e:
@@ -47,8 +48,11 @@ def add_funcionario():
 
         if not all([nome, telefone, cpf, usuario, senha, id_cargo, codigo_validacao]):
             return jsonify(MensagemErro('Todos os campos são obrigatórios', 400).serialize()), 400
+        
+        if not validar_codigo(codigo_validacao):
+            return jsonify(MensagemErro('Código de validação inválido', 400).serialize()), 400
 
-        novo_funcionario = criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo, codigo_validacao)
+        novo_funcionario = criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo)
         return jsonify(novo_funcionario), 201
     except Exception as e:
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500
