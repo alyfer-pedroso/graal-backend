@@ -4,7 +4,8 @@ from app.controllers.funcionarios_controller import (
     obter_funcionario,
     criar_funcionario,
     atualizar_funcionario,
-    deletar_funcionario
+    deletar_funcionario,
+    login_funcionario
 )
 from app.models.mensagens import MensagemErro
 
@@ -42,12 +43,35 @@ def add_funcionario():
         usuario = data.get('usuario')
         senha = data.get('senha')
         id_cargo = data.get('id_cargo')
+        codigo_validacao = data.get('codigo_validacao')
 
-        if not all([nome, telefone, cpf, usuario, senha, id_cargo]):
+        if not all([nome, telefone, cpf, usuario, senha, id_cargo, codigo_validacao]):
             return jsonify(MensagemErro('Todos os campos são obrigatórios', 400).serialize()), 400
 
-        novo_funcionario = criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo)
+        novo_funcionario = criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo, codigo_validacao)
         return jsonify(novo_funcionario), 201
+    except Exception as e:
+        return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500
+    
+@funcionario_bp.route('/login', methods=['POST'])
+def autenticar_funcionario():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify(MensagemErro('Dados não fornecidos', 400).serialize()), 400
+
+        usuario = data.get('usuario')
+        senha = data.get('senha')
+
+        if not all([usuario, senha]):
+            return jsonify(MensagemErro('Todos os campos são obrigatórios', 400).serialize()), 400
+
+        funcionario_logado = login_funcionario(usuario, senha)
+
+        if not funcionario_logado:
+            return jsonify(MensagemErro('Funcionário nao encontrado', 404).serialize()), 404
+        
+        return jsonify(funcionario_logado), 200
     except Exception as e:
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500
 

@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 
 from .routes.cargos_route import cargo_bp
 from .routes.categorias_route import categoria_bp
@@ -12,6 +13,8 @@ def create_app():
     app = Flask(__name__)
     app.config['DEBUG'] = True
 
+    CORS(app)
+
     app.register_blueprint(cargo_bp)
     app.register_blueprint(categoria_bp)
     app.register_blueprint(fornecedor_bp)
@@ -21,3 +24,4 @@ def create_app():
     app.register_blueprint(venda_bp)
 
     return app
+

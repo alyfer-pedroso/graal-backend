@@ -26,16 +26,19 @@ def obter_funcionario(id):
     finally:
         cursor.close()
 
-def criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo):
+def criar_funcionario(nome, telefone, cpf, usuario, senha, id_cargo, codigo_validacao):
     try:
         cursor = mydb.cursor()
 
-        codigo = gerar_codigo_funcionario()
+        if not validar_codigo(codigo_validacao):
+            return mensagens.MensagemErro('Código de validação inválido', 400).serialize()
 
+        codigo = gerar_codigo_funcionario()
         cursor.execute(
             "INSERT INTO Funcionario (nome, telefone, cpf, usuario, senha, codigo, id_cargo) VALUES (%s, %s, %s, %s, %s, %s, %s)",
             (nome, telefone, cpf, usuario, senha, codigo, id_cargo)
         )
+
         mydb.commit()
         return obter_funcionario(cursor.lastrowid)
     except Exception as e:
@@ -98,21 +101,46 @@ def deletar_funcionario(id):
     finally:
         cursor.close()
 
+def login_funcionario(usuario, senha):
+    try:
+        cursor = mydb.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM Funcionario WHERE usuario = %s AND senha = %s", (usuario, senha))
+
+        funcionario = cursor.fetchone()
+        return cg.Funcionario.from_db_row(funcionario).serialize() if funcionario else None
+    except Exception as e:
+        return mensagens.MensagemErro(e.args[1], e.args[0]).serialize()
+    finally:
+        cursor.close()
 
 def gerar_codigo_funcionario():
     cursor = mydb.cursor()
 
-    min_11_digit = 10**10
-    max_11_digit = 10**11 - 1
+    try:
+        min_11_digit = 10**10
+        max_11_digit = 10**11 - 1
 
-    codigo = 0
-    generate = True
+        while True:
+            codigo = random.randint(min_11_digit, max_11_digit)
+            cursor.execute("SELECT id FROM Funcionario WHERE codigo = %s", (codigo,))
+            
+            if cursor.fetchone() is None:
+                return codigo
+    finally:
+        cursor.close()
 
-    while(generate):
-        codigo = random.randint(min_11_digit, max_11_digit)
-        cursor.execute("SELECT id FROM Funcionario WHERE codigo = %s", (codigo,))
+def validar_codigo(codigo):
+    cursor = mydb.cursor()
 
-    if not cursor.fetchone():
-        generate = False
+    try:
+        cursor.execute("""
+            SELECT c.hierarquia 
+            FROM Funcionario f 
+            JOIN Cargo c ON f.id_cargo = c.id 
+            WHERE f.codigo = %s
+        """, (codigo,))
 
-    return codigo
+        result = cursor.fetchone()
+        return result[0] > 1 if result else False
+    finally:
+        cursor.close()
