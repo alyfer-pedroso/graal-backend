@@ -104,7 +104,15 @@ def deletar_funcionario(id):
 def login_funcionario(usuario, senha):
     try:
         cursor = mydb.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Funcionario WHERE usuario = %s AND senha = %s", (usuario, senha))
+        cursor.execute("""
+            SELECT 
+                f.*, 
+                c.nome AS nome_cargo, 
+                c.hierarquia 
+            FROM Funcionario f
+            JOIN Cargo c ON f.id_cargo = c.id
+            WHERE f.usuario = %s AND f.senha = %s
+    	""", (usuario, senha))
 
         funcionario = cursor.fetchone()
         return cg.Funcionario.from_db_row(funcionario).serialize() if funcionario else None
