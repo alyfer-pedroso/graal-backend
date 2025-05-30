@@ -40,6 +40,6 @@ class Produto:
             'id_fornecedor': self.id_fornecedor,
             'id_categoria': self.id_categoria,
             'categoria': self.categoria,
-            'forncedor': self.fornecedor,
+            'fornecedor': self.fornecedor,
             'quantidade_min': self.quantidade_min
         }

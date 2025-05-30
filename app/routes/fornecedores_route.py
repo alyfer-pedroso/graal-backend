@@ -8,7 +8,7 @@ from app.controllers.fornecedores_controller import (
 )
 from app.models.mensagens import MensagemErro
 
-fornecedor_bp = Blueprint('fornecedor_bp', __name__, url_prefix='/fornecedor')
+fornecedor_bp = Blueprint('fornecedor_bp', __name__, url_prefix='/fornecedores')
 
 @fornecedor_bp.route('/', methods=['GET'])
 def get_fornecedores():

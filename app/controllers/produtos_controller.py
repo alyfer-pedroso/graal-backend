@@ -1,3 +1,4 @@
+import random
 from app.database import mydb
 from app.models import produto as cg, mensagens
 
@@ -12,6 +13,7 @@ def listar_produtos():
             FROM Produto p
             JOIN Fornecedor f ON p.id_fornecedor = f.id
             JOIN Categoria c ON p.id_categoria = c.id
+            ORDER BY p.id
         """)
         
         produtos = cursor.fetchall()
@@ -24,7 +26,15 @@ def listar_produtos():
 def obter_produto(id):
     try:
         cursor = mydb.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Produto WHERE id = %s", (id,))
+        cursor.execute("""
+            SELECT 
+                p.*,
+                f.nome AS fornecedor,
+                c.nome AS categoria
+            FROM Produto p
+            JOIN Fornecedor f ON p.id_fornecedor = f.id
+            JOIN Categoria c ON p.id_categoria = c.id
+            WHERE p.id = %s """, (id,))
 
         produto = cursor.fetchone()
         return cg.Produto.from_db_row(produto).serialize() if produto else None
@@ -33,9 +43,11 @@ def obter_produto(id):
     finally:
         cursor.close()
 
-def criar_produto(nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categoria):
+def criar_produto(nome, validade, preco, quantidade, quantidade_min, id_fornecedor, id_categoria):
     try:
         cursor = mydb.cursor()
+
+        ean = gerar_ean_produto()
         cursor.execute(
             "INSERT INTO Produto (nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categoria) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
             (nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categoria)
@@ -108,3 +120,18 @@ def deletar_produto(id):
     finally:
         cursor.close()
 
+def gerar_ean_produto():
+    cursor = mydb.cursor()
+
+    try:
+        min_13_digit = 10**13
+        max_13_digit = 10**14 - 1
+
+        while True:
+            ean = random.randint(min_13_digit, max_13_digit)
+            cursor.execute("SELECT id FROM Produto WHERE EAN = %s", (ean,))
+            
+            if cursor.fetchone() is None:
+                return ean
+    finally:
+        cursor.close()
