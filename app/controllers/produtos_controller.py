@@ -4,7 +4,15 @@ from app.models import produto as cg, mensagens
 def listar_produtos():
     try:
         cursor = mydb.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Produto")
+        cursor.execute("""
+            SELECT 
+                p.*,
+                f.nome AS fornecedor,
+                c.nome AS categoria
+            FROM Produto p
+            JOIN Fornecedor f ON p.id_fornecedor = f.id
+            JOIN Categoria c ON p.id_categoria = c.id
+        """)
         
         produtos = cursor.fetchall()
         return [cg.Produto.from_db_row(produto).serialize() for produto in produtos]
@@ -25,12 +33,12 @@ def obter_produto(id):
     finally:
         cursor.close()
 
-def criar_produto(nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categorias):
+def criar_produto(nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categoria):
     try:
         cursor = mydb.cursor()
         cursor.execute(
-            "INSERT INTO Produto (nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categorias) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-            (nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categorias)
+            "INSERT INTO Produto (nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categoria) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+            (nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categoria)
         )
         mydb.commit()
         return obter_produto(cursor.lastrowid)
@@ -40,7 +48,7 @@ def criar_produto(nome, validade, preco, ean, quantidade, quantidade_min, id_for
     finally:
         cursor.close()
 
-def atualizar_produto(id, nome=None, validade=None, preco=None, ean=None, quantidade=None, quantidade_min=None, id_fornecedor=None, id_categorias=None):
+def atualizar_produto(id, nome=None, validade=None, preco=None, ean=None, quantidade=None, quantidade_min=None, id_fornecedor=None, id_categoria=None):
     try:
         cursor = mydb.cursor()
         updates = []
@@ -67,9 +75,9 @@ def atualizar_produto(id, nome=None, validade=None, preco=None, ean=None, quanti
         if id_fornecedor is not None:
             updates.append("id_fornecedor = %s")
             params.append(id_fornecedor)
-        if id_categorias is not None:
-            updates.append("id_categorias = %s")
-            params.append(id_categorias)
+        if id_categoria is not None:
+            updates.append("id_categoria = %s")
+            params.append(id_categoria)
 
         if not updates:
             return mensagens.MensagemErro("Nenhum dado para atualizar", 400).serialize()

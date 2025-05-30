@@ -8,10 +8,10 @@ from app.controllers.produtos_controller import (
 )
 from app.models.mensagens import MensagemErro
 
-produto_bp = Blueprint('produto_bp', __name__, url_prefix='/produto')
+produto_bp = Blueprint('produto_bp', __name__, url_prefix='/produtos')
 
 @produto_bp.route('/', methods=['GET'])
-def listar_produtos():
+def listar_produto():
     try:
         produto = listar_produtos()
         return jsonify(produto), 200
@@ -44,12 +44,12 @@ def add_produtos():
         quantidade = data.get('quantidade')
         quantidade_min = data.get('quantidade_min')
         id_fornecedor = data.get('id_fornecedor')
-        id_categorias = data.get('id_categorias')
+        id_categoria = data.get('id_categoria')
 
-        if not id or not nome or not validade or not preco or not ean or not quantidade or not quantidade_min or not id_fornecedor or not id_categorias:
+        if not id or not nome or not validade or not preco or not ean or not quantidade or not quantidade_min or not id_fornecedor or not id_categoria:
             return jsonify(MensagemErro('Todos os campos são obrigatórios', 400).serialize()), 400
         
-        novo_produto = criar_produto(id, nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categorias)
+        novo_produto = criar_produto(id, nome, validade, preco, ean, quantidade, quantidade_min, id_fornecedor, id_categoria)
         return jsonify(novo_produto), 201
     except Exception as e:
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500
