@@ -6,6 +6,7 @@ from app.controllers.vendas_controller import (
     atualizar_venda,
     deletar_venda
 )
+from app.controllers.itens_controller import (criar_item)
 from app.models.mensagens import MensagemErro
 
 venda_bp = Blueprint('venda_bp', __name__, url_prefix='/venda')
@@ -36,15 +37,27 @@ def add_vendas():
         if not data:
             return jsonify(MensagemErro('Dados não fornecidos', 400).serialize()), 400
 
-        id = data.get('id')
         total = data.get('total')
-        data_venda = data.get('data_venda')
         id_funcionario = data.get('id_funcionario')
+        produtos = data.get('produtos')
 
-        if not id or not total or not data_venda or not id_funcionario:
+        if  not total or not id_funcionario or not produtos:
             return jsonify(MensagemErro('Todos os campos são obrigatórios', 400).serialize()), 400
         
-        nova_venda = criar_venda(id, total, data_venda, id_funcionario)
+        nova_venda = criar_venda(total, id_funcionario)
+        
+        if not nova_venda:
+            return jsonify(MensagemErro('Erro ao criar venda', 500).serialize()), 500
+        
+        for produto in produtos:
+            id_produto = produto.get('id_produto')
+            quantidade = produto.get('quantidade')
+
+            if not id_produto or not quantidade:
+                return jsonify(MensagemErro('Todos os campos são obrigatórios', 400).serialize()), 400
+            
+            criar_item(quantidade, nova_venda['id'], id_produto, )
+        
         return jsonify(nova_venda), 201
     except Exception as e:
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500

@@ -25,12 +25,12 @@ def obter_venda(id):
     finally:
         cursor.close()
 
-def criar_venda(total, data_venda, id_funcionario):
+def criar_venda(total, id_funcionario):
     try:
         cursor = mydb.cursor()
         cursor.execute(
-            "INSERT INTO Venda (total, data_venda, id_funcionario) VALUES (%s, %s, %s)",
-            (total, data_venda, id_funcionario)
+            "INSERT INTO Venda (total, id_funcionario) VALUES (%s, %s)",
+            (total, id_funcionario)
         )
         mydb.commit()
         return obter_venda(cursor.lastrowid)
