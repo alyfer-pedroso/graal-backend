@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.controllers.vendas_controller import (
-    listar_vendas,
+    listar_todas_vendas,
     obter_venda,
     criar_venda,
     atualizar_venda,
@@ -9,12 +9,12 @@ from app.controllers.vendas_controller import (
 from app.controllers.itens_controller import (criar_item)
 from app.models.mensagens import MensagemErro
 
-venda_bp = Blueprint('venda_bp', __name__, url_prefix='/venda')
+venda_bp = Blueprint('venda_bp', __name__, url_prefix='/vendas')
 
 @venda_bp.route('/', methods=['GET'])
 def listar_vendas():
     try:
-        vendas = listar_vendas()
+        vendas = listar_todas_vendas()
         return jsonify(vendas), 200
     except Exception as e:
         return jsonify(MensagemErro(e.args[1], e.args[0]).serialize()), 500

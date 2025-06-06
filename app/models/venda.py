@@ -16,5 +16,5 @@ class Venda:
             'id': self.id,
             'total': self.total,
             'data_venda': self.data_venda,
-            'id_funcionario': self.id_funcionario
+            'id_funcionario': self.id_funcionario,
         }
