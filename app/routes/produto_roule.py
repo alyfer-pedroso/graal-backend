@@ -59,7 +59,6 @@ def update_produtos(id):
         if not data:
             return jsonify(MensagemErro('Dados não fornecidos', 400).serialize()), 400
         
-        id = data.get('id')
         nome = data.get('nome')
         validade = data.get('validade')
         preco = data.get('preco')
